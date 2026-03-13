@@ -1,11 +1,21 @@
 version: '3.6'
 
 services:
-  backend:
-    image: fabreguesm/sistema_rrhh_back:1.0.112                                                                                                     
+  sistema_rrhh_demo:
+    image: fabreguesm/sistema_rrhh_demo:1.0.1                                                                                                     
     deploy:
       placement:
         constraints: ["${NODE}"]
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.${SERVICE_NAME}.entrypoints=web"
+        - "traefik.http.routers.${SERVICE_NAME}.rule=Host(`${DOMAIN_NAME}`)"
+        - "traefik.http.middlewares.${SERVICE_NAME}-http.redirectscheme.scheme=https"
+        - "traefik.http.routers.${SERVICE_NAME}-https.rule=Host(`${DOMAIN_NAME}`)"
+        - "traefik.http.routers.${SERVICE_NAME}-https.entrypoints=https"
+        - "traefik.http.routers.${SERVICE_NAME}-https.tls=true"
+        - "traefik.http.routers.${SERVICE_NAME}-https.tls.certresolver=myresolver"
+        - "traefik.http.services.${SERVICE_NAME}.loadbalancer.server.port=3001"      
     environment:
       - DB_HOST=10.250.0.68
       - DB_PORT=5002
@@ -28,7 +38,7 @@ services:
       - DB_ACQUIRE_TIMEOUT_MS=40000 
       - S2S_API_KEY=una-clave-segura-generada
     ports:
-      - "3001:3001"
+      - "5030:3001"
     volumes:
       - backend_uploads:/app/uploads
     networks:
@@ -36,38 +46,10 @@ services:
     logging:
       driver: loki
       options:
-        loki-url: ${LOKI_URL}
-
-  frontend:
-    image: fabreguesm/sistema_rrhh_front:1.0.113
-    deploy:
-      placement:
-        constraints: ["${NODE}"]
-      labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.${SERVICE_NAME}.entrypoints=web"
-        - "traefik.http.routers.${SERVICE_NAME}.rule=Host(`${DOMAIN_NAME}`)"
-        - "traefik.http.middlewares.${SERVICE_NAME}-http.redirectscheme.scheme=https"
-        - "traefik.http.routers.${SERVICE_NAME}-https.rule=Host(`${DOMAIN_NAME}`)"
-        - "traefik.http.routers.${SERVICE_NAME}-https.entrypoints=https"
-        - "traefik.http.routers.${SERVICE_NAME}-https.tls=true"
-        - "traefik.http.routers.${SERVICE_NAME}-https.tls.certresolver=myresolver"
-        - "traefik.http.services.${SERVICE_NAME}.loadbalancer.server.port=80"     
-    environment:
-      - REACT_APP_API_BASE_URL=${REACT_APP_API_BASE_URL}
-      - TZ=America/Argentina/Cordoba
-    ports: 
-     - "3002:80"
-    networks:
-      - traefik
-    logging:
-      driver: loki
-      options:
-        loki-url: ${LOKI_URL}
+        loki-url: ${LOKI_URL}  
 volumes:
   backend_uploads:
     name: "${SERVICE_NAME}_backend_uploads"
-
 networks:
   traefik:
     external: 
