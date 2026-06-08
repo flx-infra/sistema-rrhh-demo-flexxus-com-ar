@@ -2,7 +2,7 @@ version: '3.6'
 
 services:
   sistema_rrhh_demo:
-    image: fabreguesm/sistema_rrhh_demo:1.0.60
+    image: fabreguesm/sistema_rrhh_demo:1.0.61
     deploy:
       placement:
         constraints: ["${NODE}"]
@@ -38,6 +38,9 @@ services:
       - DB_ACQUIRE_TIMEOUT_MS=40000
       - S2S_API_KEY=una-clave-segura-generada
       - GOOGLE_PLACES_API_KEY=AIzaSyCUnPTyiaWy8eP2ravAZyrarA9zcPVG9h8
+      - ATTENDANCE_REMINDERS_ENABLED=True
+      - ATTENDANCE_CHECKIN_OFFSET_MINUTES=5
+      - ATTENDANCE_CHECKOUT_OFFSET_MINUTES=5
     ports:
       - "5030:3001"
     volumes:
